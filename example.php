@@ -1,22 +1,42 @@
 <?php
+require_once(__DIR__.'/vendor/autoload.php');
+use Akeneo\Component\SpreadsheetParser\SpreadsheetParser;
+
+$workbook = SpreadsheetParser::open('example.xls');
+
+//$myWorksheetIndex = $workbook->getWorksheetIndex('myworksheet');
+$iterator = $workbook->createRowIterator(1);
+
+foreach ($iterator as $rowIndex => $values) {
+    print_r($values);
+}
+die;
+
 error_reporting(E_ALL ^ E_NOTICE);
 require_once 'excel_reader2.php';
-$xls = new Spreadsheet_Excel_Reader("example.xls");
+//$xls = new Spreadsheet_Excel_Reader("example.xls");
+$xls = new Akeneo\Component\SpreadsheetParser\Xls\SpreadsheetExcelReader("example.xls");
+//print_r(array_keys($xls->sheets)); die;
 //$data = new Spreadsheet_Excel_Reader("PG-ID-DBAL-Master-v2.3.xlsx");
-//print_r($xls->sheets[0]['cellsInfo']);
-for ($row = 1; $row <= $xls->rowcount(); $row++)
+//echo $xls->rowcount(1);
+//echo $xls->sheets[1]['numRows'];
+//die;
+//
+//print_r($xls->sheets[1]); die;
+$sheet_index = 1;
+for ($row = 1; $row <= $xls->rowcount($sheet_index); $row++)
 {
     $rows = array();
-    for ($col = 1; $col <= $xls->colcount(); $col++)
+    for ($col = 1; $col <= $xls->colcount($sheet_index); $col++)
     {
-        $type = $xls->type($row, $col);
+        $type = $xls->type($row, $col, $sheet_index);
 
         switch ($type) {
             case 'number':
-                $val = $xls->raw($row, $col);
+                $val = $xls->raw($row, $col, $sheet_index);
                 break;
             case 'date':
-                $raw = $xls->raw($row, $col);
+                $raw = $xls->raw($row, $col, $sheet_index);
                 // Converting Excel Raw Date
                 $days = floor($raw);
                 $secs = round(($raw - $days) * 24 * 3600);
@@ -28,7 +48,7 @@ for ($row = 1; $row <= $xls->rowcount(); $row++)
                 $val = $date;
                 break;
             default:
-                $val = $xls->val($row, $col);
+                $val = $xls->val($row, $col, $sheet_index);
         }
         $rows[] = $val;
 //        if (isset($special_col[$col]))
@@ -77,5 +97,5 @@ for ($row = 1; $row <= $xls->rowcount(); $row++)
 //        }
     }
 
-    if ($row == 13) print_r($rows);
+    if ($row > 0) print_r($rows);
 }
